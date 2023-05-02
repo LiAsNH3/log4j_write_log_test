@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--添加线程局部变量，保存key。通过读取该值选择不同的日志记录器-->
+<Configuration status="OFF">
+    <Appenders>
+        <Routing name="Routing">
+            <Routes pattern="$${ctx:ROUTINGKEY}">
+                <!-- This route is chosen if ThreadContext has value 'special' for key ROUTINGKEY. -->
+                <Route key="special">
+                    <RollingFile name="Rolling-${ctx:ROUTINGKEY}" fileName="logs/special-${ctx:ROUTINGKEY}.log"
+                                 filePattern="./logs/${date:yyyy-MM}/${ctx:ROUTINGKEY}-special-%d{yyyy-MM-dd}-%i.log.gz">
+                        <PatternLayout>
+                            <Pattern>%d{ISO8601} [%t] %p %c{3} - %m%n</Pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy interval="6" modulate="true"/>
+                            <SizeBasedTriggeringPolicy size="10 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+                <!-- This route is chosen if ThreadContext has no value for key ROUTINGKEY. -->
+                <Route key="$${ctx:ROUTINGKEY}">
+                    <RollingFile name="Rolling-default" fileName="logs/default.log"
+                                 filePattern="./logs/${date:yyyy-MM}/default-%d{yyyy-MM-dd}-%i.log.gz">
+                        <PatternLayout>
+                            <pattern>%d{ISO8601} [%t] %p %c{3} - %m%n</pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy interval="6" modulate="true"/>
+                            <SizeBasedTriggeringPolicy size="10 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+                <!-- This route is chosen if ThreadContext has a value for ROUTINGKEY
+                     (other than the value 'special' which had its own route above).
+                     The value dynamically determines the name of the log file. -->
+                <Route>
+                    <RollingFile name="Rolling-${ctx:ROUTINGKEY}" fileName="logs/${ctx:ROUTINGKEY}.log"
+                                 filePattern="./logs/${date:yyyy-MM}/${ctx:ROUTINGKEY}-%d{yyyy-MM-dd}-%i.log.gz">
+                        <PatternLayout>
+                            <pattern>%d{ISO8601} [%t] %p %c{3} - %m%n</pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy interval="6" modulate="true"/>
+                            <SizeBasedTriggeringPolicy size="10 MB"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+            </Routes>
+            <IdlePurgePolicy timeToLive="2" timeUnit="seconds"/>
+        </Routing>
+    </Appenders>
+    <Loggers>
+        <!-- 级别顺序（低到高）：TRACE < DEBUG < INFO < WARN < ERROR < FATAL -->
+        <Root level="DEBUG" includeLocation="true">
+            <!-- AppenderRef 中的 ref 值必须是在前面定义的 appender -->
+            <AppenderRef ref="Routing"/>
+        </Root>
+    </Loggers>
+</Configuration>

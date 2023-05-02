@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--系统日志打印配置-->
+<configuration>
+    <!-- ConsoleAppender 控制台输出日志 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <!-- Minimum logging level to be presented in the console logs -->
+            <level>INFO</level>
+        </filter>
+        <!-- 对日志进行格式化 -->
+        <encoder>
+            <pattern>
+                %date{yyyy-MM-dd HH:mm:ss} [%X{traceid}] %highlight(%5p) [%green(%thread)] %boldMagenta(%logger): %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
